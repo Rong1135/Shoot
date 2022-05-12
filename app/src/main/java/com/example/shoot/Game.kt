@@ -8,35 +8,46 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.view.GestureDetector
+import android.view.MotionEvent
 
-class Game(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs),
-    SurfaceHolder.Callback{
-
+class Game(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs),  SurfaceHolder.Callback, GestureDetector.OnGestureListener
+{
     var surfaceHolder: SurfaceHolder
     var BG: Bitmap
     var BGmoveX:Int = 0
+    // 飛機
+    var fly : Fly
+    var gDetector: GestureDetector
 
-    init {
+    init
+    {
         surfaceHolder = getHolder()
         BG = BitmapFactory.decodeResource(getResources(), R.drawable.background)
         surfaceHolder.addCallback(this)
+        fly = Fly(context!!)
+        gDetector = GestureDetector(context, this)
     }
 
-    override fun surfaceCreated(p0: SurfaceHolder) {
+    override fun surfaceCreated(p0: SurfaceHolder)
+    {
         var canvas: Canvas = surfaceHolder.lockCanvas()
         drawSomething(canvas)
         surfaceHolder.unlockCanvasAndPost(canvas)
     }
 
-    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+    override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int)
+    {
 
     }
 
-    override fun surfaceDestroyed(p0: SurfaceHolder) {
+    override fun surfaceDestroyed(p0: SurfaceHolder)
+    {
 
     }
 
-    fun drawSomething(canvas:Canvas) {
+    fun drawSomething(canvas:Canvas)
+    {
         var SrcRect: Rect = Rect(0, 0, BG.width, BG.height) //裁切
         var w:Int = width
         var h:Int = height
@@ -47,16 +58,59 @@ class Game(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs
         var BGnewX:Int = w + BGmoveX
 
         // 如果已捲動整張圖，則重新開始
-        if (BGnewX <= 0) {
+        if (BGnewX <= 0)
+        {
             BGmoveX = 0
             // only need one draw
             canvas.drawBitmap(BG, SrcRect, DestRect, null)
-        } else {
+        }
+        else
+        {
             // need to draw original and wrap
             DestRect = Rect(BGmoveX, 0, BGmoveX+w, h)
             canvas.drawBitmap(BG, SrcRect, DestRect, null)
             DestRect = Rect(BGnewX, 0, BGnewX+w, h)
             canvas.drawBitmap(BG, SrcRect, DestRect, null)
         }
+
+        fly.draw(canvas)
     }
+
+    override fun onDown(p0: MotionEvent?): Boolean
+    {
+        return true
+    }
+
+    override fun onShowPress(p0: MotionEvent?)
+    {
+
+    }
+
+    override fun onSingleTapUp(p0: MotionEvent?): Boolean
+    {
+        return true
+    }
+
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, p2: Float, p3: Float): Boolean
+    {
+        fly.y = e2!!.y.toInt() - fly.h/2
+        return true
+    }
+
+    override fun onLongPress(p0: MotionEvent?)
+    {
+
+    }
+
+    override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean
+    {
+        return true
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean
+    {
+        gDetector.onTouchEvent(event)
+        return true
+    }
+
 }
